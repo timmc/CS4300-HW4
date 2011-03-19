@@ -53,8 +53,8 @@
 (defn in-poly?
   "Return distance to closest edge if inside, or else logical false."
   [pt verts]
-  (let [edges (wrap-pairs verts)
-        dists (map #(apply dist-to-line pt (project 2 %)) edges)]
+  (let [edges (wrap-pairs (map (partial project 2) verts))
+        dists (map #(apply dist-to-line pt %) edges)]
     (if (some neg? dists)
       nil
       (reduce min dists))))
