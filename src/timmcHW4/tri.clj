@@ -41,3 +41,21 @@
   "Transform a triangle projected into [x y] using a vertex function."
   [vf tri]
   (update-in tri [:v] #(map vf %)))
+
+(defn bounds2
+  "Get 2D bounds of triangle as [[xmin xmax] [ymin ymax]]."
+  [tri]
+  (let [vs (vertices tri)
+        by-dim (apply map vector vs)]
+    (map (partial apply (juxt min max)) by-dim)))
+
+(defn interior-points2
+  "Returns a lazy seq of all interior points on a triangle."
+  [tri]
+  (let [[xb yb] (bounds2 tri)
+        vs (vertices tri)]
+    (filter #(g/in-poly2? % vs)
+            (for [x (apply range xb)
+                  y (apply range yb)]
+              [x y]))))
+

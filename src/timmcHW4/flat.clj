@@ -8,7 +8,8 @@
 (defn render
   "Render a flat scene using view-coordinate backface-culled triangles."
   [^Graphics2D g2, tris]
-  nil)
-
-
+  (doseq [t tris]
+    (.setPaint g2 (Color. (float (rand)) (float (rand)) (float (rand))))
+    (doseq [[x y] (t/interior-points2 t)]
+      (.drawLine g2 x y x y))))
 
