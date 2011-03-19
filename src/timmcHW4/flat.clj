@@ -50,20 +50,41 @@
 
 ;;;; Display
 
+(defn render-flat
+  [^Graphics2D g2, tris]
+  nil)
+
+(defn render-wire
+  "Render a wireframe scene. Provided triangles should be in view coordinates
+   and already have been backface-culled."
+  [^Graphics2D g2, tris]
+  (.setPaint g2 Color/WHITE)
+  (doseq [t tris]
+    (doseq [e (t/edges t)]
+      (let [[x1 y1 x2 y2] (flatten e)]
+        (.draw g2 (java.awt.geom.Line2D$Double. x1 y1 x2 y2))))))
+
+(defn render-shade
+  [^Graphics2D g2, tris]
+  nil)
+
 (defn render
   "Render the scene."
   [^Graphics2D g2]
   (doto g2
     (.setPaint Color/BLACK)
-    (.fillRect 0 0 (dec view-w) (dec view-h))
-    (.setPaint Color/WHITE))
+    (.fillRect 0 0 (dec view-w) (dec view-h)))
   (let [displayable (filter (comp g/is-CCW2? t/vertices)
                             (map (partial t/xform2 to-view) @*tris*))]
-    (println "After backside culling:" (count displayable))
-    (doseq [t displayable]
-      (doseq [e (t/edges t)]
-        (let [[x1 y1 x2 y2] (flatten e)]
-          (.draw g2 (java.awt.geom.Line2D$Double. x1 y1 x2 y2)))))))
+    (println "After backface culling:" (count displayable))
+    (render-wire g2 displayable)))
+
+;;;; Modes
+
+(def modes
+  {:flat {:move false :renderer render-flat}
+   :wire {:move true :renderer render-wire}
+   :shade {:move true :renderer render-shade}})
 
 ;;;; Interaction
 
