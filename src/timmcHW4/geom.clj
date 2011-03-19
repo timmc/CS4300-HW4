@@ -43,18 +43,20 @@
   [m v]
   (vec (take m (concat v (repeat 0)))))
 
-(defn dist-to-line
-  "Get the signed distance from the point (p) to the line (from s through e).
-   Points to the left get a positive value."
+(defn dist-to-line2
+  "Get the signed distance from the point (p) to the line (from s through e)
+   in the [x y] plane. Points to the left get a positive value."
   [p s e]
   (dot (vect s p)
        (unit (normal2 (vect s e)))))
 
-(defn in-poly?
-  "Return distance to closest edge if inside, or else logical false."
+(defn in-poly2?
+  "Return distance to closest edge if inside, or else logical false.
+   Only works for simple, convex polygons.
+   Vertices will be projected to the [x y] plane."
   [pt verts]
   (let [edges (wrap-pairs (map (partial project 2) verts))
-        dists (map #(apply dist-to-line pt %) edges)]
+        dists (map #(apply dist-to-line2 pt %) edges)]
     (if (some neg? dists)
       nil
       (reduce min dists))))
