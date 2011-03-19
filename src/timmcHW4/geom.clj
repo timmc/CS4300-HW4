@@ -71,7 +71,9 @@
    Vertices will be projected to the [x y] plane."
   [pt verts]
   (let [edges (wrap-pairs (map (partial project 2) verts))
-        dists (map #(apply dist-to-line2 pt %) edges)]
+        dists (map #(apply dist-to-line2 pt %) edges)
+        dists (map (partial + 0.5) dists) ;; hack to make triangles expand a bit
+        ]
     (if (some neg? dists)
       nil
       (reduce min dists))))
