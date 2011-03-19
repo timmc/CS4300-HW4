@@ -1,5 +1,6 @@
 (ns timmcHW4.geom
-  "Vector geometry. Except where otherwise marked, functions take n-vectors.")
+  "Vector geometry. Except where otherwise marked, functions take n-vectors.
+   Functions that expect a specific dimension will call project on the inputs.")
 
 ;;;; Utility
 
@@ -12,6 +13,12 @@
 
 ;;;; Vector basics
 
+(defn project
+  "Project an n-vector to an m-vector by dropping the higher coordinates.
+   Missing coordinates will be replaced with 0."
+  [m v]
+  (vec (take m (concat v (repeat 0)))))
+
 (defn mag
   "Compute magnitude of a vector."
   [v]
@@ -19,8 +26,17 @@
 
 (defn dot
   "Compute dot product of two vectors."
-  [v1 v2]
-  (apply + (map * v1 v2)))
+  [a b]
+  (apply + (map * a b)))
+
+(defn cross3
+  "Compute cross product of two 3-vectors."
+  [a b]
+  (let [[ax ay az] (project 3 a)
+        [bx by bz] (project 3 b)]
+    [(- (* ay bz) (* az by))
+     (- (* az bx) (* ax bz))
+     (- (* ax by) (* ay bx))]))
 
 (defn unit
   "Normalize to unit vector. Zero vector is returned unchanged."
@@ -34,12 +50,6 @@
   "Compute a vector from start point to end point."
   [s e]
   (vec (map - e s)))
-
-(defn project
-  "Project an n-vector to an m-vector by dropping the higher coordinates.
-   Missing coordinates will be replaced with 0."
-  [m v]
-  (vec (take m (concat v (repeat 0)))))
 
 ;;;; Plane geometry
 
@@ -69,5 +79,7 @@
 (defn is-CCW2?
   "Check if the [x y] vertices go in CCW order."
   [verts]
-  (let [edges (wrap-pairs (map (partial project 2) verts))]
-    ())) ;; todo: culling
+  (let [edges (wrap-pairs (map (partial project 2) verts))
+        evects (map #(apply vect %) edges)
+        evpairs (wrap-pairs evects)]
+    (every? #(pos? (nth % 2)) (map #(apply cross3 %) evpairs))))
