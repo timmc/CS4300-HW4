@@ -67,13 +67,13 @@
 
 (defn in-poly2?
   "Return distance to closest edge if inside, or else logical false.
+   Allowance parameter specifies distance from actual edge to consider interior.
    Only works for simple, convex polygons.
    Vertices will be projected to the [x y] plane."
-  [pt verts]
+  [pt verts allowance]
   (let [edges (wrap-pairs (map (partial project 2) verts))
         dists (map #(apply dist-to-line2 pt %) edges)
-        dists (map (partial + 0.5) dists) ;; hack to make triangles expand a bit
-        ]
+        dists (map (partial + allowance) dists)]
     (if (some neg? dists)
       nil
       (reduce min dists))))
