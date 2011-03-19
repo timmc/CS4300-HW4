@@ -3,11 +3,14 @@
 
 ;;;; Utility
 
+;; TODO: move to separate utility class?
 (defn wrap-pairs
   "Given a collection [a b c ... y z],
    return seq [[a b] [b c] ... [y z] [z a]]"
   [coll]
   (take (count coll) (partition 2 1 (cycle coll))))
+
+;;;; Vector basics
 
 (defn mag
   "Compute magnitude of a vector."
@@ -18,11 +21,6 @@
   "Compute dot product of two vectors."
   [v1 v2]
   (apply + (map * v1 v2)))
-
-(defn normal2
-  "Compute the left normal of a 2D vector."
-  [[x y]]
-  [(- y) x])
 
 (defn unit
   "Normalize to unit vector. Zero vector is returned unchanged."
@@ -43,11 +41,18 @@
   [m v]
   (vec (take m (concat v (repeat 0)))))
 
+;;;; Plane geometry
+
+(defn normal2
+  "Compute the left normal of a 2D vector."
+  [[x y]]
+  [(- y) x])
+
 (defn dist-to-line2
   "Get the signed distance from the point (p) to the line (from s through e)
    in the [x y] plane. Points to the left get a positive value."
   [p s e]
-  (dot (vect s p)
+  (dot (project 2 (vect s p))
        (unit (normal2 (vect s e)))))
 
 (defn in-poly2?
@@ -60,3 +65,9 @@
     (if (some neg? dists)
       nil
       (reduce min dists))))
+
+(defn is-CCW2?
+  "Check if the [x y] vertices go in CCW order."
+  [verts]
+  (let [edges (wrap-pairs (map (partial project 2) verts))]
+    ())) ;; todo: culling
