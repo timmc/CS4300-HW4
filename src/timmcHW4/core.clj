@@ -60,10 +60,12 @@
     (.fillRect 0 0 (dec view-w) (dec view-h)))
   (let [displayable (filter (comp g/is-CCW2? t/vertices)
                             (map (partial t/xform2 to-view) @*tris*))]
-    (println "After backface culling:" (count displayable))
+    (println (count displayable) "triangles not culled from render.")
     ((:renderer mode) g2 displayable)))
 
 ;;;; Interaction
+
+;;TODO keyboard rotation
 
 ;;;; Modes
 
@@ -92,7 +94,6 @@
   (doto (proxy [JComponent] []
           (paint [^Graphics2D g] (render g mode @*tris*)))
     (.setDoubleBuffered true)
-    (.setMinimumSize (Dimension. w h))
     (.setPreferredSize (Dimension. w h))))
 
 (defn launch
@@ -106,7 +107,7 @@
       (.pack)
       (.setResizable false)
       (.setVisible true)))
-  (println "Recieved" (count tris) "triangles"))
+  (println "Read" (count tris) "triangles."))
 
 (defn read-dot-tri
   "Read a .tri file and return a collection of triangles."
