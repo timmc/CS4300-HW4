@@ -1,13 +1,9 @@
 (ns timmcHW4.shade
   "3D flat-shaded triangle renderer."
-  (:import [javax.swing SwingUtilities UIManager]))
+  (:import [java.awt Color Graphics2D]))
 
-(defn launch
-  [tris]
-  (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
-  (println (count tris)))
+(defn render
+  "Render a shaded-face scene using view-coordinate backface-culled triangles."
+  [^Graphics2D g2, tris]
+  nil)
 
-(defn start
-  "Start an instance on the event loop."
-  [tris]
-  (SwingUtilities/invokeLater #(launch tris)))
