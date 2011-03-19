@@ -5,9 +5,9 @@
   (:gen-class))
 
 (def programs
-  {"flat" timmcHW4.flat/launch
-   "wire" timmcHW4.wire/launch
-   "shade" timmcHW4.shade/launch})
+  {"flat" timmcHW4.flat/start
+   "wire" timmcHW4.wire/start
+   "shade" timmcHW4.shade/start})
 
 (defn fail
   "Fail with an error message."
@@ -32,7 +32,7 @@
       (fail (str "Too many arguments. Unrecognized: " more-args)))
     (when-not (and which infile)
       (fail (str "Too few arguments. Usage: timmcHW4 flat|wire|shade file")))
-    (if-let [launcher (programs which)]
-      (launcher (read-dot-tri infile))
+    (if-let [starter (programs which)]
+      (starter (read-dot-tri infile))
       (fail (str "Unrecognized program name: " which)))))
 
