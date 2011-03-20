@@ -1,7 +1,9 @@
 (ns timmcHW4.tri
   "Triangle definition and processing."
   (:require [timmcHW4.geom :as g])
-  (:import [java.awt Color]))
+  (:use [incanter.core :only (matrix solve mmult)])
+  (:import [java.awt Color]
+           [java.awt.geom AffineTransform Point2D Point2D$Double]))
 
 ;;;; Definitions
 
@@ -37,10 +39,25 @@
 
 ;;;; Geometry
 
+(defn ^Point2D pt
+  "Make a Point2D object from x and y coordinates."
+  [x y]
+  (Point2D$Double. x y))
+
+(defn de-pt
+  "Read a Point2D object into a 2-vector of x, y."
+  [^Point2D p]
+  [(.getX p) (.getY p)])
+
+(defn- xform2-single
+  "Take [x y] to [w z] via at."
+  [^AffineTransform at, [x y]]
+  (de-pt (.transform at (pt x y) nil)))
+
 (defn xform2
-  "Transform a triangle projected into [x y] using a vertex function."
-  [vf tri]
-  (update-in tri [:v] #(map vf %)))
+  "Transform a triangle projected into [x y] using the given transform."
+  [^AffineTransform at, tri]
+  (update-in tri [:v] #(map (partial xform2-single at) %)))
 
 (defn bounds2
   "Get 2D bounds of triangle as [[xmin xmax] [ymin ymax]]."
@@ -49,13 +66,26 @@
         by-dim (apply map vector vs)]
     (map (partial apply (juxt min max)) by-dim)))
 
-(defn interior-points2
-  "Returns a lazy seq of all interior points on a triangle."
+(defn aarect-points2
+  "Returns a lazy seq of all points in a triangle's axis-aligned bounding box."
   [tri]
-  (let [[xb yb] (bounds2 tri)
+  (let [[[xmin xmax] [ymin ymax]] (bounds2 tri)
         vs (vertices tri)]
-    (filter #(g/in-poly2? % vs)
-            (for [x (apply range xb)
-                  y (apply range yb)]
-              [x y]))))
+    (for [x (range (int xmin) (int xmax))
+          y (range (int xmin) (int xmax))]
+      [x y])))
 
+(defn make-to-bary2
+  "Return a function that computes the barycentric coordinates [α β γ]
+   of provided [x y] points."
+  [tri]
+  (let [[[x1 y1] [x2 y2] [x3 y3]] (vertices tri)
+        tform (matrix [[(- x1 x3) (- x2 x3)]
+                       [(- y1 y3) (- y2 y3)]])
+        invtrans (solve tform)]
+    (fn [[x y]]
+      (let [diff (matrix [[(- x x3)]
+                          [(- y y3)]])
+            [α β] (mmult invtrans diff)
+            γ (- 1 α β)]
+        [α β γ]))))

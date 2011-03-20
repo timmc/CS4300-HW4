@@ -2,7 +2,7 @@
   (:require timmcHW4.flat timmcHW4.wire timmcHW4.shade)
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
-           [java.awt.geom AffineTransform Point2D Point2D$Double]
+           [java.awt.geom AffineTransform]
            [javax.swing JFrame JComponent SwingUtilities UIManager])
   (:require [timmcHW4.parse :as p]
             [timmcHW4.tri :as t]
@@ -16,35 +16,18 @@
   [^Dimension d]
   [(.width d) (.height d)])
 
-(defn ^Point2D pt
-  "Make a Point2D object from x and y coordinates."
-  [x y]
-  (Point2D$Double. x y))
-
-(defn de-pt
-  "Read a Point2D object into a 2-vector of x, y."
-  [^Point2D p]
-  [(.getX p) (.getY p)])
+;;;; Canvas geometry
 
 (def view-w 512)
 (def view-h 512)
 
-(def ^AffineTransform xform-to-view
+(def ^AffineTransform xform-view-to-canvas
   (doto (AffineTransform.)
     (.translate (/ view-w 2) (/ view-h 2))
     (.scale 1 -1)))
-(def ^AffineTransform xform-to-world
-  (.createInverse xform-to-view))
 
-(defn to-world
-  "Take an [x y] from view to world coords."
-  [[x y & _]]
-  (de-pt (.transform xform-to-world (pt x y) nil)))
-
-(defn to-view
-  "Take an [x y] from world to view coords."
-  [[x y & _]]
-  (de-pt (.transform xform-to-view (pt x y) nil)))
+(def *xform-world-to-view*
+  (ref (AffineTransform.)))
 
 ;;;; State
 
@@ -52,16 +35,34 @@
 
 ;;;; Display
 
+(defn tri-maybe-on-canvas
+  "Return true if at least part of a triangle is possibly on the canvas.
+   Tests for intersection of triangle's bounding box with canvas."
+  [tri]
+  (let [[[xmin xmax] [ymin ymax]] (t/bounds2 tri)]
+    ;; standard axis-aligned rectangle intersection test.
+    (and (<= 0 xmax)
+         (< xmin view-w)
+         (<= 0 ymax)
+         (< ymin view-h))))
+
 (defn render
   "Render the scene using the given mode."
   [^Graphics2D g2, mode, tris]
   (doto g2
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
+  ;; TODO: Also filter out triangles outside the display area
+  ;; This will require doing the viewpoint->canvas transform.
   (let [displayable (filter (comp g/is-CCW2? t/vertices)
-                            (map (partial t/xform2 to-view) @*tris*))]
-    (println (count displayable) "triangles not culled from render.")
-    ((:renderer mode) g2 displayable)))
+                            (map (partial t/xform2 @*xform-world-to-view*)
+                                 @*tris*))
+        viewable (filter tri-maybe-on-canvas
+                         (map (partial t/xform2 xform-view-to-canvas)
+                              displayable))]
+    (println (count displayable) "triangles not culled from viewpoint.")
+    (println (count viewable) "triangles not culled from canvas.")
+    ((:renderer mode) g2 viewable)))
 
 ;;;; Interaction
 
