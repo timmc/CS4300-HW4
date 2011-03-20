@@ -59,17 +59,10 @@
   [^AffineTransform at, tri]
   (update-in tri [:v] #(map (partial xform2-single at) %)))
 
-(defn bounds2
-  "Get 2D bounds of triangle as [[xmin xmax] [ymin ymax]]."
-  [tri]
-  (let [vs (vertices tri)
-        by-dim (apply map vector vs)]
-    (map (partial apply (juxt min max)) by-dim)))
-
 (defn aarect-points2
   "Returns a lazy seq of all points in a triangle's axis-aligned bounding box."
   [tri]
-  (let [[[xmin xmax] [ymin ymax]] (bounds2 tri)
+  (let [[[xmin xmax] [ymin ymax]] (g/bounds (vertices tri))
         vs (vertices tri)]
     (for [x (range (int xmin) (int xmax))
           y (range (int xmin) (int xmax))]

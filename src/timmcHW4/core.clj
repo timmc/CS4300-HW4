@@ -39,7 +39,7 @@
   "Return true if at least part of a triangle is possibly on the canvas.
    Tests for intersection of triangle's bounding box with canvas."
   [tri]
-  (let [[[xmin xmax] [ymin ymax]] (t/bounds2 tri)]
+  (let [[[xmin xmax] [ymin ymax]] (g/bounds (t/vertices tri))]
     ;; standard axis-aligned rectangle intersection test.
     (and (<= 0 xmax)
          (< xmin view-w)

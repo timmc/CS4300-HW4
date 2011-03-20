@@ -11,6 +11,15 @@
   [coll]
   (take (count coll) (partition 2 1 (cycle coll))))
 
+(defn bounds
+  "Get bounding ranges for all dimensions of a collection of coordinates.
+   A collection of [x y] points would result in [[xmin xmax] [ymin ymax]]."
+  [points]
+  (when (empty? points)
+    (throw (Exception. "Bounds undefined for 0 points.")))
+  (let [by-dim (apply map vector points)]
+    (map (partial apply (juxt min max)) by-dim)))
+
 ;;;; Vector basics
 
 (defn project
