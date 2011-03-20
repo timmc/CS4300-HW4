@@ -64,8 +64,8 @@
   [tri]
   (let [[[xmin xmax] [ymin ymax]] (g/bounds (vertices tri))
         vs (vertices tri)]
-    (for [x (range (int xmin) (int xmax))
-          y (range (int xmin) (int xmax))]
+    (for [x (range (int xmin) (inc (int xmax)))
+          y (range (int ymin) (inc (int ymax)))]
       [x y])))
 
 (defn make-to-bary2
