@@ -98,10 +98,3 @@
       nil
       (reduce min dists))))
 
-(defn is-CCW2?
-  "Check if the [x y] vertices go in CCW order."
-  [verts]
-  (let [edges (wrap-pairs (map (partial project 2) verts))
-        evects (map #(apply vect %) edges)
-        evpairs (wrap-pairs evects)]
-    (every? #(pos? (nth % 2)) (map #(apply cross3 %) evpairs))))

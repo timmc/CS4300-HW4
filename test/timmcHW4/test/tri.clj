@@ -15,3 +15,10 @@
           [1 0] [1 1] [1 2]
           [2 0] [2 1] [2 2]])))
 
+(deftest orienting
+  (let [unit-ccw (orient (make [0 0 0] [1 0 0] [0 1 0] [] [] []))]
+    (is (= (orientation unit-ccw) [0 0 1]))
+    (is (front-face3z? unit-ccw)))
+  (let [unit-cw (orient (make [0 0 0] [0 1 0] [1 0 0] [] [] []))]
+    (is (= (orientation unit-cw) [0 0 -1]))
+    (is (not (front-face3z? unit-cw)))))

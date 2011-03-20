@@ -49,6 +49,26 @@
   [^Point2D p]
   [(.getX p) (.getY p)])
 
+(defn orient
+  "Add an orientation vector to the triangle."
+  [tri]
+  (let [[v0 v1 v2] (vertices tri)
+        e01 (g/vect v0 v1)
+        e12 (g/vect v1 v2)]
+    (assoc tri :orient (g/cross3 e01 e12))))
+
+(defn orientation
+  "Retrieve the orientation vector from the triangle, or nil."
+  [oriented-tri]
+  (:orient oriented-tri))
+
+(defn front-face3z?
+  "Determine if an oriented triangle has a positive z component to its
+   orientation vector, and is therefore a front-face to a [0 0 1] observer."
+  [oriented-tri]
+  (let [[_ _ z] (orientation oriented-tri)]
+    (pos? z)))
+
 (defn- xform2-single
   "Take [x y] to [w z] via at."
   [^AffineTransform at, [x y]]

@@ -35,10 +35,7 @@
   (is (== (in-poly2? [1.5 1.25] right-tri 0) 0.25))
   ;; allowance
   (is (== (cut 6 (in-poly2? [0.9 0.9] right-tri 0.1)) 0))
-  (is (not (in-poly2? [0.89 0.89] right-tri 0.1)))
-  ;; orientation
-  (is (is-CCW2? right-tri))
-  (is (not (is-CCW2? (rseq right-tri)))))
+  (is (not (in-poly2? [0.89 0.89] right-tri 0.1))))
 
 (deftest bounding
   (is (= (bounds [[0 1] [10 11] [100 101]]) [[0 100] [1 101]]))
