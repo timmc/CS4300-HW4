@@ -1,4 +1,4 @@
-(ns timmcHW4.flat
+(ns timmcHW4.bary2
   "2D triangle renderer program with barycentric interpolation."
   (:require [timmcHW4.geom :as g]
             [timmcHW4.tri :as t])
@@ -22,6 +22,8 @@
           (when (and (< 0 α 1)
                      (< 0 β 1)
                      (< 0 γ 1))
-            (.setPaint g2 (mix-color [α β γ] colors))
-            (.drawLine g2 x y x y)))))))
+            (doto g2
+              (.setPaint (mix-color [α β γ] colors))
+              ;; TODO: Check this on CCIS machine -- may not draw properly
+              (.drawLine x y x y))))))))
 

@@ -1,5 +1,5 @@
 (ns timmcHW4.core
-  (:require timmcHW4.flat timmcHW4.wire timmcHW4.shade)
+  (:require timmcHW4.bary2 timmcHW4.wire timmcHW4.shade)
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
            [java.awt.geom AffineTransform]
@@ -71,15 +71,15 @@
 ;;;; Modes
 
 (def modes
-  {"flat" {:move false
-           :renderer timmcHW4.flat/render
-           :title "Flat projection"}
+  {"bary2" {:move false
+           :renderer timmcHW4.bary2/render
+           :title "Barycentric interpolation in 2D"}
    "wire" {:move true
            :renderer timmcHW4.wire/render
            :title "Interactive wireframe"}
    "shade" {:move true
             :renderer timmcHW4.shade/render
-            :title "Interactive flat-shaded"}})
+            :title "Interactive directional flat-shaded"}})
 
 ;;;; Launch
 
@@ -126,7 +126,7 @@
     (when (seq more-args)
       (fail (str "Too many arguments. Unrecognized: " more-args)))
     (when-not (and which infile)
-      (fail (str "Too few arguments. Usage: timmcHW4 flat|wire|shade file")))
+      (fail (str "Too few arguments. Usage: timmcHW4 bary2|wire|shade file")))
     (if-let [mode (modes which)]
       (SwingUtilities/invokeLater #(launch mode (read-dot-tri infile)))
       (fail (str "Unrecognized program name: " which)))))
