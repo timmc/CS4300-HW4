@@ -1,8 +1,7 @@
 (ns timmcHW4.core
-  (:require timmcHW4.bary2 timmcHW4.wire timmcHW4.shade)
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
-           [java.awt.geom AffineTransform]
+           [java.awt.geom AffineTransform Line2D$Double]
            [javax.swing JFrame JComponent SwingUtilities UIManager])
   (:require [timmcHW4.parse :as p]
             [timmcHW4.tri :as t]
@@ -32,6 +31,53 @@
 ;;;; State
 
 (def *tris* (ref nil))
+
+;;;; Renderers
+
+(defn ^Color mix-color
+  "Create a Color object from a barycentric coordinates of a point and the
+   float [r g b] colors at the vertices."
+  [colors bary-coords]
+  (apply #(Color. (float %1) (float %2) (float %3))
+         (g/sum (map g/scale bary-coords colors))))
+
+(defn render-bary2
+  "Render a 2D scene."
+  [^Graphics2D g2, tris]
+  (doseq [t tris]
+    (let [to-bary (t/make-to-bary2 t)
+          colors (t/colors t)]
+      (doseq [[x y] (t/aarect-points2 t)]
+        (let [[α β γ] (to-bary [x y])]
+          (when (and (< 0 α 1)
+                     (< 0 β 1)
+                     (< 0 γ 1))
+            (doto g2
+              (.setPaint (mix-color colors [α β γ]))
+              ;; TODO: Check this on CCIS machine -- may not draw properly
+              (.drawLine x y x y))))))))
+
+(defn render-wire
+  "Render a wireframe 3D scene."
+  [^Graphics2D g2, tris]
+  (.setPaint g2 Color/WHITE)
+  (doseq [t tris]
+    (doseq [e (t/edges t)]
+      (let [[x1 y1 x2 y2] (flatten e)]
+        (.draw g2 (Line2D$Double. x1 y1 x2 y2))))))
+
+(defn render-shade
+  "Render a directionally shaded 3D scene."
+  [^Graphics2D g2, tris]
+  (doseq [t tris]
+    (.setPaint g2 Color/RED)
+    (let [to-bary (t/make-to-bary2 t)]
+      (doseq [[x y] (t/aarect-points2 t)]
+        (let [[α β γ] (to-bary [x y])]
+          (when (and (< 0 α 1)
+                     (< 0 β 1)
+                     (< 0 γ 1))
+            (.drawLine g2 x y x y)))))))
 
 ;;;; Display
 
@@ -70,13 +116,13 @@
 
 (def modes
   {"bary2" {:move false
-           :renderer timmcHW4.bary2/render
+           :renderer render-bary2
            :title "Barycentric interpolation in 2D"}
    "wire" {:move true
-           :renderer timmcHW4.wire/render
+           :renderer render-wire
            :title "Interactive wireframe"}
    "shade" {:move true
-            :renderer timmcHW4.shade/render
+            :renderer render-shade
             :title "Interactive directional flat-shaded"}})
 
 ;;;; Launch

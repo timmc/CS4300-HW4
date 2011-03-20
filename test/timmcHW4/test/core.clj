@@ -1,5 +1,5 @@
-(ns timmcHW4.test.bary2
-  (:use [timmcHW4.bary2] :reload)
+(ns timmcHW4.test.core
+  (:use [timmcHW4.core] :reload)
   (:use [clojure.test])
   (:use [timmcHW4.test.utils :only (cut)]))
 
