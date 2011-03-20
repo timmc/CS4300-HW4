@@ -59,8 +59,10 @@
   [^AffineTransform at, tri]
   (update-in tri [:v] #(map (partial xform2-single at) %)))
 
-(defn aarect-points2
-  "Returns a lazy seq of all points in a triangle's axis-aligned bounding box."
+(defn candidate-points2
+  "Returns a lazy seq of points that are possibly on the triangle's
+   2D projection. Currently returns all points in a triangle's axis-aligned
+   bounding box."
   [tri]
   (let [[[xmin xmax] [ymin ymax]] (g/bounds (vertices tri))
         vs (vertices tri)]
