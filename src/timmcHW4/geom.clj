@@ -33,6 +33,17 @@
   [v]
   (Math/sqrt (apply + (map #(* % %) v))))
 
+(defn sum
+  "Compute sum of vectors. Behavior only defined for indices present in all
+   vectors."
+  [vs]
+  (apply map + vs))
+
+(defn scale
+  "Multiply a vector by a scalar."
+  [scalar v]
+  (map (partial * scalar) v))
+
 (defn dot
   "Compute dot product of two vectors."
   [a b]
