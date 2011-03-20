@@ -8,14 +8,11 @@
             [timmcHW4.geom :as g])
   (:gen-class))
 
-;;;; Geometry
+;;;; State
 
-(defn de-dim
-  "Read a Dimension object into a 2-vector of width, height."
-  [^Dimension d]
-  [(.width d) (.height d)])
+(def *tris* (ref nil))
 
-;;;; Canvas geometry
+;;;; Transformations
 
 (def view-w 512)
 (def view-h 512)
@@ -28,9 +25,30 @@
 (def *xform-world-to-view*
   (ref (AffineTransform.)))
 
-;;;; State
+(defn tri-maybe-on-canvas
+  "Return true if at least part of a triangle is possibly on the canvas.
+   Tests for intersection of triangle's bounding box with canvas."
+  [tri]
+  (let [[[xmin xmax] [ymin ymax]] (g/bounds (t/vertices tri))]
+    ;; standard axis-aligned rectangle intersection test.
+    (and (<= 0 xmax)
+         (< xmin view-w)
+         (<= 0 ymax)
+         (< ymin view-h))))
 
-(def *tris* (ref nil))
+(defn tris-for-viewpoint
+  "Map world triangles to viewpoint, culling backface elements."
+  [tris]
+  (filter (comp g/is-CCW2? t/vertices)
+          (map (partial t/xform2 @*xform-world-to-view*)
+               tris)))
+
+(defn tris-for-canvas
+  "Map viewpoint triangles to canvas, culling offscreen elements."
+  [tris]
+  (filter tri-maybe-on-canvas
+          (map (partial t/xform2 xform-view-to-canvas)
+               tris)))
 
 ;;;; Renderers
 
@@ -82,29 +100,14 @@
 
 ;;;; Display
 
-(defn tri-maybe-on-canvas
-  "Return true if at least part of a triangle is possibly on the canvas.
-   Tests for intersection of triangle's bounding box with canvas."
-  [tri]
-  (let [[[xmin xmax] [ymin ymax]] (g/bounds (t/vertices tri))]
-    ;; standard axis-aligned rectangle intersection test.
-    (and (<= 0 xmax)
-         (< xmin view-w)
-         (<= 0 ymax)
-         (< ymin view-h))))
-
 (defn render
   "Render the scene using the given mode."
   [^Graphics2D g2, mode, tris]
   (doto g2
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
-  (let [displayable (filter (comp g/is-CCW2? t/vertices)
-                            (map (partial t/xform2 @*xform-world-to-view*)
-                                 @*tris*))
-        viewable (filter tri-maybe-on-canvas
-                         (map (partial t/xform2 xform-view-to-canvas)
-                              displayable))]
+  (let [displayable (tris-for-viewpoint tris)
+        viewable (tris-for-canvas displayable)]
     (println (count displayable) "triangles not culled from viewpoint.")
     (println (count viewable) "triangles not culled from canvas.")
     ((:renderer mode) g2 viewable)))
