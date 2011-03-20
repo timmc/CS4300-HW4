@@ -52,8 +52,6 @@
   (doto g2
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
-  ;; TODO: Also filter out triangles outside the display area
-  ;; This will require doing the viewpoint->canvas transform.
   (let [displayable (filter (comp g/is-CCW2? t/vertices)
                             (map (partial t/xform2 @*xform-world-to-view*)
                                  @*tris*))

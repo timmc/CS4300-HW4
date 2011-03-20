@@ -7,7 +7,7 @@
 (defn ^Color mix-color
   "Create a Color object from a barycentric coordinates of a point and the
    float [r g b] colors at the vertices."
-  [bary-coords colors]
+  [colors bary-coords]
   (apply #(Color. (float %1) (float %2) (float %3))
          (g/sum (map g/scale bary-coords colors))))
 
@@ -23,7 +23,7 @@
                      (< 0 β 1)
                      (< 0 γ 1))
             (doto g2
-              (.setPaint (mix-color [α β γ] colors))
+              (.setPaint (mix-color colors [α β γ]))
               ;; TODO: Check this on CCIS machine -- may not draw properly
               (.drawLine x y x y))))))))
 
