@@ -1,0 +1,34 @@
+# Overview
+
+The code is written in Clojure, a Lisp that targets the JVM, and uses the Java
+AWT packages for windowing and canvas graphics.
+
+
+
+# Usage
+
+
+
+# Compilation
+
+Invoke ./setup.sh to install the Leiningen build tool in ~/.lein and download
+HW3 dependencies. Compilation is on-the-fly and will occur during the first run.
+
+# Execution
+
+Invoke ./run.sh to execute HW4.
+
+# Known bugs
+
+
+
+# Extra credit
+
+Possible items:
+* Light source is arbitrary, though currently hardcoded at the negated unit
+  vector of [0.3, 1.0, 0.5].
+
+# Third-party credit
+
+No external code was incorporated into this project.
+
