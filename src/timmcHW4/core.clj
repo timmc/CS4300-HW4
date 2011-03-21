@@ -11,6 +11,7 @@
 ;;;; State
 
 (def *tris* (ref nil))
+(def *light-vect* (ref (g/unit [0.3 1 0.5])))
 
 ;;;; Transformations
 
@@ -50,11 +51,19 @@
 
 ;;;; Renderers
 
+(defn clamp-float
+  "Clamp a float value to within the specified closed interval."
+  [min max v]
+  (Math/min (float max) (Math/max (float min) (float v))))
+
 (defn ^Color mix-color
   "Create a Color object from a barycentric coordinates of a point and the
    float [r g b] colors at the vertices."
   [colors bary-coords]
-  (apply #(Color. (float %1) (float %2) (float %3))
+  ;; Clamping is for possible floating point errors driving floats out of [0 1].
+  (apply #(Color. (clamp-float 0 1 %1)
+                  (clamp-float 0 1 %2)
+                  (clamp-float 0 1 %3))
          (g/sum (map g/scale bary-coords colors))))
 
 ;; All renderers take a collection of viewpoint triangles. The triangles have
@@ -91,7 +100,7 @@
   (doseq [view-t vtris]
     (let [;; computations on view
           orientation-hat (g/unit (t/orientation view-t))
-          zcomp (g/dot orientation-hat [0 0 1])
+          zcomp (/ (inc (g/dot orientation-hat @*light-vect*)) 2) ;; 0 to 1
           colors (map (partial g/scale zcomp) (t/colors view-t))
           ;; computations on canvas
           for-canvas (t/xform2 xform-view-to-canvas view-t)
