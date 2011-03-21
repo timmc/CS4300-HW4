@@ -149,7 +149,8 @@
   "Make a canvas with the given size."
   [mode w h]
   (doto (proxy [JComponent] []
-          (paint [^Graphics2D g] (render g mode @*tris*)))
+          (paint [^Graphics2D g] (render g mode @*tris*))
+          (update [^Graphics2D g]))
     (.setDoubleBuffered true)
     (.setPreferredSize (Dimension. w h))))
 
