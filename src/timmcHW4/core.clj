@@ -22,9 +22,6 @@
     (.translate (/ view-w 2) (/ view-h 2))
     (.scale 1 -1)))
 
-(def *xform-world-to-view*
-  (ref (AffineTransform.)))
-
 (defn tri-maybe-on-canvas
   "Return true if at least part of a triangle is possibly on the canvas.
    Tests for intersection of triangle's bounding box with canvas."
@@ -117,7 +114,7 @@
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
   (let [viewpoint-tris (tris-for-viewpoint tris)]
-    (println (count viewpoint-tris) "triangles not culled from viewpoint.")    
+    (println (count viewpoint-tris) "triangles not culled from viewpoint.")
     ((:renderer mode) g2 viewpoint-tris)))
 
 ;;;; Interaction
@@ -142,7 +139,7 @@
 (defn fail
   "Fail with an error message."
   [msg]
-  (.println System/err msg)
+  (.println *err* msg)
   (System/exit 1))
 
 (defn ^JComponent new-canvas
