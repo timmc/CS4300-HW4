@@ -1,6 +1,7 @@
 (ns timmcHW4.core
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
+           [java.awt.event KeyEvent KeyAdapter]
            [java.awt.geom AffineTransform Line2D$Double]
            [javax.swing JFrame JComponent SwingUtilities UIManager])
   (:require [timmcHW4.parse :as p]
@@ -148,12 +149,38 @@
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
   (let [snapshot (ensure-view-tris)]
-    (println (count snapshot) "triangles not culled from viewpoint.")
     ((:renderer mode) g2 snapshot)))
 
 ;;;; Interaction
 
-;;TODO keyboard rotation
+(def press-handlers
+  {KeyEvent/VK_UP #(commute *rot-X* + 0.1)
+   KeyEvent/VK_DOWN #(commute *rot-X* - 0.1)
+   KeyEvent/VK_LEFT #(commute *rot-Z* + 0.1)
+   KeyEvent/VK_RIGHT #(commute *rot-Z* - 0.1)})
+
+(defn handle-key-pressed
+  "Handle a key pressed on the canvas. Return logical true when needs repaint."
+  [^KeyEvent ke]
+  (if-let [thunk (press-handlers (.getKeyCode ke))]
+    (dosync (thunk)
+            true)
+    false))
+
+(def type-handlers
+  {\r #(do (ref-set *rot-X* 0)
+           (ref-set *rot-Z* 0)
+           (ref-set *scale* 1))
+   \- #(commute *scale* / 1.1)
+   \+ #(commute *scale* * 1.1)})
+
+(defn handle-key-typed
+  "Handle a char typed on the canvas. Return logical true when needs repaint."
+  [^KeyEvent ke]
+  (if-let [thunk (type-handlers (.getKeyChar ke))]
+    (dosync (thunk)
+            true)
+    false))
 
 ;;;; Modes
 
@@ -176,14 +203,28 @@
   (.println *err* msg)
   (System/exit 1))
 
+(defn invalidate-view
+  "Force the view triangles to be recomputed."
+  [canvas]
+  (dosync (ref-set *view-tris* nil))
+  (.repaint canvas))
+
 (defn ^JComponent new-canvas
   "Make a canvas with the given size."
   [mode w h]
-  (doto (proxy [JComponent] []
-          (paint [^Graphics2D g] (render g mode))
-          (update [^Graphics2D g]))
-    (.setDoubleBuffered true)
-    (.setPreferredSize (Dimension. w h))))
+  (let [canvas (proxy [JComponent] []
+                 (paint [^Graphics2D g] (render g mode))
+                 (update [^Graphics2D g]))]
+    (doto canvas
+      (.setDoubleBuffered true)
+      (.setPreferredSize (Dimension. w h))
+      (.addKeyListener (proxy [KeyAdapter] []
+                         (keyPressed [^KeyEvent ke]
+                           (when (handle-key-pressed ke)
+                             (invalidate-view canvas)))
+                         (keyTyped [^KeyEvent ke]
+                           (when (handle-key-typed ke)
+                             (invalidate-view canvas))))))))
 
 (defn launch
   [mode tris]
@@ -195,7 +236,8 @@
       (.add canvas)
       (.pack)
       (.setResizable false)
-      (.setVisible true)))
+      (.setVisible true))
+    (.requestFocus canvas))
   (println "Read" (count tris) "triangles."))
 
 (defn read-dot-tri
