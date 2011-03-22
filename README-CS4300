@@ -26,7 +26,8 @@ Invoke ./run.sh to execute HW4.
 
 Possible items:
 * Light source is arbitrary, though currently hardcoded at the negated unit
-  vector of [0.3, 1.0, 0.5].
+  vector of [0.3, 1.0, 0.5]. Lighting intensity goes to zero at back, not side,
+  relative to source.
 
 # Third-party credit
 
