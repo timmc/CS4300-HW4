@@ -13,6 +13,7 @@
 
 (def ^{:doc "Original triangles as loaded by parser."}
   *orig-tris* (ref nil))
+;; These must be appropriate for bary2 mode.
 (def ^{:doc "Rotation around the Z axis."}
   *rot-Z* (ref 0))
 (def ^{:doc "Rotation around the X axis."}
@@ -224,11 +225,13 @@
       (.setPreferredSize (Dimension. w h))
       (.addKeyListener (proxy [KeyAdapter] []
                          (keyPressed [^KeyEvent ke]
-                           (when (handle-key-pressed ke)
-                             (invalidate-view canvas)))
+                           (when (:move mode)
+                             (when (handle-key-pressed ke)
+                               (invalidate-view canvas))))
                          (keyTyped [^KeyEvent ke]
-                           (when (handle-key-typed ke)
-                             (invalidate-view canvas))))))))
+                           (when (:move mode)
+                             (when (handle-key-typed ke)
+                               (invalidate-view canvas)))))))))
 
 (defn launch
   [mode tris]
