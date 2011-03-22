@@ -14,9 +14,11 @@
 (def ^{:doc "Original triangles as loaded by parser."}
   *orig-tris* (ref nil))
 (def ^{:doc "Rotation around the Z axis."}
-  *rot-Z* (ref 0.1))
+  *rot-Z* (ref 0))
 (def ^{:doc "Rotation around the X axis."}
-  *rot-X* (ref 0.1))
+  *rot-X* (ref 0))
+(def ^{:doc "Rotation around the Y axis."}
+  *rot-Y* (ref 0))
 (def ^{:doc "Scaling from origin."}
   *scale* (ref 1))
 (def ^{:doc "Triangles after rotation. Nil if rotation has changed."}
@@ -50,7 +52,7 @@
    backface elements."
   [tris]
   ;; TODO: investigate why this negation is required for CCW z rotation
-  (let [tmat (g/rotscale-ZXYs (- @*rot-Z*) @*rot-X* 0 @*scale*)]
+  (let [tmat (g/rotscale-ZXYs (- @*rot-Z*) @*rot-X* @*rot-Y* @*scale*)]
     (filter t/front-face3z?
             (map #(t/orient (t/xform3 % tmat)) tris))))
 
@@ -69,6 +71,7 @@
   (dosync
    (ensure *rot-Z*)
    (ensure *rot-X*)
+   (ensure *rot-Y*)
    (ensure *scale*)
    (if-let [view @*view-tris*]
      view
@@ -156,8 +159,8 @@
 (def press-handlers
   {KeyEvent/VK_UP #(commute *rot-X* + 0.1)
    KeyEvent/VK_DOWN #(commute *rot-X* - 0.1)
-   KeyEvent/VK_LEFT #(commute *rot-Z* + 0.1)
-   KeyEvent/VK_RIGHT #(commute *rot-Z* - 0.1)})
+   KeyEvent/VK_LEFT #(commute *rot-Y* + 0.1)
+   KeyEvent/VK_RIGHT #(commute *rot-Y* - 0.1)})
 
 (defn handle-key-pressed
   "Handle a key pressed on the canvas. Return logical true when needs repaint."
@@ -170,7 +173,8 @@
 (def type-handlers
   {\r #(do (ref-set *rot-X* 0)
            (ref-set *rot-Z* 0)
-           (ref-set *scale* 1))
+           (ref-set *rot-Y* 0))
+   \1 #(ref-set *scale* 1)
    \- #(commute *scale* / 1.1)
    \+ #(commute *scale* * 1.1)})
 
