@@ -10,8 +10,18 @@
 
 ;;;; State
 
-(def *tris* (ref nil))
-(def *light-vect* (ref (g/unit [0.3 1 0.5])))
+(def ^{:doc "Original triangles as loaded by parser."}
+  *orig-tris* (ref nil))
+(def ^{:doc "Rotation around the Z axis."}
+  *rot-Z* (ref 0.1))
+(def ^{:doc "Rotation around the X axis."}
+  *rot-X* (ref 0.1))
+(def ^{:doc "Scaling from origin."}
+  *scale* (ref 1))
+(def ^{:doc "Triangles after rotation. Nil if rotation has changed."}
+  *view-tris* (ref nil))
+(def ^{:doc "Light source vector (opposite of direction of rays)."}
+  *light-vect* (ref (g/unit [0.3 1 0.5])))
 
 ;;;; Transformations
 
@@ -38,9 +48,10 @@
   "Map world triangles to viewpoint, adding orientation vectors and culling
    backface elements."
   [tris]
-  (filter t/front-face3z?
-          ;; TODO write and use xform3
-          (map t/orient tris)))
+  ;; TODO: investigate why this negation is required for CCW z rotation
+  (let [tmat (g/rotscale-ZXYs (- @*rot-Z*) @*rot-X* 0 @*scale*)]
+    (filter t/front-face3z?
+            (map #(t/orient (t/xform3 % tmat)) tris))))
 
 (defn tris-for-canvas
   "Map viewpoint triangles to canvas, culling offscreen elements."
@@ -48,6 +59,20 @@
   (filter tri-maybe-on-canvas
           (map (partial t/xform2 xform-view-to-canvas)
                tris)))
+
+;;;; Updating
+
+(defn ensure-view-tris
+  "Get viewpoint triangles, recalculating if necessary."
+  []
+  (dosync
+   (ensure *rot-Z*)
+   (ensure *rot-X*)
+   (ensure *scale*)
+   (if-let [view @*view-tris*]
+     view
+     (ref-set *view-tris*
+              (tris-for-viewpoint @*orig-tris*)))))
 
 ;;;; Renderers
 
@@ -118,13 +143,13 @@
 
 (defn render
   "Render the scene using the given mode."
-  [^Graphics2D g2, mode, tris]
+  [^Graphics2D g2, mode]
   (doto g2
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
-  (let [viewpoint-tris (tris-for-viewpoint tris)]
-    (println (count viewpoint-tris) "triangles not culled from viewpoint.")
-    ((:renderer mode) g2 viewpoint-tris)))
+  (let [snapshot (ensure-view-tris)]
+    (println (count snapshot) "triangles not culled from viewpoint.")
+    ((:renderer mode) g2 snapshot)))
 
 ;;;; Interaction
 
@@ -155,14 +180,14 @@
   "Make a canvas with the given size."
   [mode w h]
   (doto (proxy [JComponent] []
-          (paint [^Graphics2D g] (render g mode @*tris*))
+          (paint [^Graphics2D g] (render g mode))
           (update [^Graphics2D g]))
     (.setDoubleBuffered true)
     (.setPreferredSize (Dimension. w h))))
 
 (defn launch
   [mode tris]
-  (dosync (ref-set *tris* tris))
+  (dosync (ref-set *orig-tris* tris))
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (let [canvas (new-canvas mode view-w view-h)]
     (doto (JFrame. (str (:title mode) " / TimMc HW4 - CS4300"))

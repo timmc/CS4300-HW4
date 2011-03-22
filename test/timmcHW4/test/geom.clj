@@ -44,22 +44,26 @@
   (is (= (bounds [[10 20 -300] [1000 20 3] [100 200 30]])
          [[10 1000] [20 200] [-300 30]])))
 
-(deftest rotations
+(deftest rotscale
   ;; full rotations on each axis -- sanity check
-  (is (= (rotator-ZXY (* 2 Math/PI) 0 0) (identity-matrix 3)))
-  (is (= (rotator-ZXY 0 (* 2 Math/PI) 0) (identity-matrix 3)))
-  (is (= (rotator-ZXY 0 0 (* 2 Math/PI)) (identity-matrix 3)))
+  (is (= (rotscale-ZXYs (* 2 Math/PI) 0 0 1) (identity-matrix 3)))
+  (is (= (rotscale-ZXYs 0 (* 2 Math/PI) 0 1) (identity-matrix 3)))
+  (is (= (rotscale-ZXYs 0 0 (* 2 Math/PI) 1) (identity-matrix 3)))
   ;; sample 90 degree rotation
-  (is (= (rotator-ZXY (/ Math/PI 2) 0 0)
+  (is (= (rotscale-ZXYs (/ Math/PI 2) 0 0 1)
          (matrix [[0 -1 0]
                   [1 0 0]
                   [0 0 1]])))
   ;; aliasing
-  (is (= (rotator-ZXY (/ Math/PI 2) (/ Math/PI 2) (/ Math/PI 2))
-         (rotator-ZXY 0             (/ Math/PI 2) 0            )))
+  (is (= (rotscale-ZXYs (/ Math/PI 2) (/ Math/PI 2) (/ Math/PI 2) 1)
+         (rotscale-ZXYs 0             (/ Math/PI 2) 0             1)))
   ;; rotations of points
   (is (= (map (partial cut 9)
-              (rotate3 (rotator-ZXY 0 (/ Math/PI 2) 0)
-                       [1 5 2]))
-         [1 -2 5])))
+              (xform3 (rotscale-ZXYs 0 (/ Math/PI 2) 0 1)
+                      [1 5 2]))
+         [1 -2 5]))
+  (is (= (map (partial cut 9)
+              (xform3 (rotscale-ZXYs 0 0 0 2)
+                      [1 5 2]))
+         [2 10 4])))
 

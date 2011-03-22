@@ -79,6 +79,11 @@
   [^AffineTransform at, tri]
   (update-in tri [:v] #(map (partial xform2-single at) %)))
 
+(defn xform3
+  "Transform a triangle's vertices by the given 3x3 non-homogenous matrix."
+  [tri mat]
+  (update-in tri [:v] g/xform3 mat))
+
 (defn candidate-points2
   "Returns a lazy seq of points that are possibly on the triangle's
    2D projection. Currently returns all points in a triangle's axis-aligned
@@ -103,4 +108,5 @@
                           [(- y y3)]])
             [α β] (mmult invtrans diff)
             γ (- 1 α β)]
+        ;; having fun with Unicode char names -- nix this down the road, maybe
         [α β γ]))))
