@@ -1,5 +1,6 @@
 (ns timmcHW4.test.geom
   (:use [timmcHW4.geom] :reload)
+  (:use [incanter.core :only (matrix identity-matrix)])
   (:use [clojure.test])
   (:use [timmcHW4.test.utils :only (cut)]))
 
@@ -42,3 +43,23 @@
   (is (= (bounds [[0 20 -300]]) [[0 0] [20 20] [-300 -300]]))
   (is (= (bounds [[10 20 -300] [1000 20 3] [100 200 30]])
          [[10 1000] [20 200] [-300 30]])))
+
+(deftest rotations
+  ;; full rotations on each axis -- sanity check
+  (is (= (rotator-ZXY (* 2 Math/PI) 0 0) (identity-matrix 3)))
+  (is (= (rotator-ZXY 0 (* 2 Math/PI) 0) (identity-matrix 3)))
+  (is (= (rotator-ZXY 0 0 (* 2 Math/PI)) (identity-matrix 3)))
+  ;; sample 90 degree rotation
+  (is (= (rotator-ZXY (/ Math/PI 2) 0 0)
+         (matrix [[0 -1 0]
+                  [1 0 0]
+                  [0 0 1]])))
+  ;; aliasing
+  (is (= (rotator-ZXY (/ Math/PI 2) (/ Math/PI 2) (/ Math/PI 2))
+         (rotator-ZXY 0             (/ Math/PI 2) 0            )))
+  ;; rotations of points
+  (is (= (map (partial cut 9)
+              (rotate3 (rotator-ZXY 0 (/ Math/PI 2) 0)
+                       [1 5 2]))
+         [1 -2 5])))
+

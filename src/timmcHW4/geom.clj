@@ -1,6 +1,7 @@
 (ns timmcHW4.geom
   "Vector geometry. Except where otherwise marked, functions take n-vectors.
-   Functions that expect a specific dimension will call project on the inputs.")
+   Functions that expect a specific dimension will call project on the inputs."
+  (:use [incanter.core :only (matrix mmult)]))
 
 ;;;; Utility
 
@@ -97,4 +98,33 @@
     (if (some neg? dists)
       nil
       (reduce min dists))))
+
+;;;; 3D geometry
+
+(defn rotator-ZXY
+  "Return a rotation matrix suitable for rotating 3-vectors about the Z, X, and
+   Y axes in order."
+  [zrad xrad yrad]
+  (let [cosx (Math/cos xrad)
+        sinx (Math/sin xrad)
+        cosy (Math/cos yrad)
+        siny (Math/sin yrad)
+        cosz (Math/cos zrad)
+        sinz (Math/sin zrad)]
+    (mmult (matrix [[cosy 0 siny]
+                    [0 1 0]
+                    [(- siny) 0 cosy]])
+           (matrix [[1 0 0]
+                    [0 cosx (- sinx)]
+                    [0 sinx cosx]])
+           (matrix [[cosz (- sinz) 0]
+                    [sinz cosz 0]
+                    [0 0 1]]))))
+
+;; Even though this is currently general to n dimensions, leaving it specified
+;; in 3D to allow optimizations.
+(defn rotate3
+  "Rotate a point in 3D using a rotation matrix."
+  [rotmat pt]
+  (into [] (mmult rotmat pt)))
 
