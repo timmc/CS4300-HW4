@@ -1,4 +1,7 @@
 (ns timmcHW4.core
+  "Implements triangle mesh rendering as specified in
+   <http://www.ccs.neu.edu/course/cs4300/HW4/HW4.html>.
+   See README for usage."
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
            [java.awt.event KeyEvent KeyAdapter]
@@ -48,6 +51,8 @@
          (<= 0 ymax)
          (< ymin view-h))))
 
+;; TODO: For performance, experiment with separating colors and vertices,
+;;       then using transients or even arrays for faster recomputation.
 (defn tris-for-viewpoint
   "Map world triangles to viewpoint, adding orientation vectors and culling
    backface elements."
@@ -81,7 +86,7 @@
 
 ;;;; Renderers
 
-(defn clamp-float
+(defn ^Float clamp-float
   "Clamp a float value to within the specified closed interval."
   [min max v]
   (Math/min (float max) (Math/max (float min) (float v))))
@@ -91,6 +96,8 @@
    float [r g b] colors at the vertices."
   [colors bary-coords]
   ;; Clamping is for possible floating point errors driving floats out of [0 1].
+  ;; This is also the only check on input colors.
+  ;; TODO: Investigate performance benefits of removing clamps.
   (apply #(Color. (clamp-float 0 1 %1)
                   (clamp-float 0 1 %2)
                   (clamp-float 0 1 %3))
@@ -132,6 +139,11 @@
           orientation-hat (g/unit (t/orientation view-t))
           zcomp (/ (inc (g/dot orientation-hat @*light-vect*)) 2) ;; 0 to 1
           colors (map (partial g/scale zcomp) (t/colors view-t))
+          ;;; pretty but silly orientation-dependent colors
+          ;; [xh yh zh] orientation-hat
+          ;; one-color [(- 1 xh) (- 1 yh) (- 1 zh)]
+          ;; colors [one-color one-color one-color] ; solid
+          ;; colors [[(- 1 xh) 0 0] [0 (- 1 yh) 0] [0 0 (- 1 zh)]] ; pinwheel
           ;; computations on canvas
           for-canvas (t/xform2 xform-view-to-canvas view-t)
           to-bary (t/make-to-bary2 for-canvas)]
@@ -149,6 +161,7 @@
 (defn render
   "Render the scene using the given mode."
   [^Graphics2D g2, mode]
+  ;; TODO: Try using a BufferedImage for performance
   (doto g2
     (.setPaint Color/BLACK)
     (.fillRect 0 0 (dec view-w) (dec view-h)))
@@ -235,6 +248,7 @@
 
 (defn launch
   [mode tris]
+  ;; TODO: Make mode a global so we can switch renderers mid-program?
   (dosync (ref-set *orig-tris* tris))
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (let [canvas (new-canvas mode view-w view-h)]

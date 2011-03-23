@@ -30,8 +30,7 @@ pkg: pkg-clean
 	cp README-CS4300 "$(PKGDIR)/README.txt"
 	cp -r src/ "$(PKGDIR)/src"
 	cp -r test/ "$(PKGDIR)/test"
-	cp -r doc/ "$(PKGDIR)/doc"
-	cp project.clj deploy/{run,setup}.sh NEWS.md "$(PKGDIR)/"
+	cp project.clj run.sh Makefile "$(PKGDIR)/"
 	find ./pkg -name '*~' -delete
 	tar -czf "$(PACKAGE_FILE)" --directory pkg/ "$(PROJNAME)/"
 
@@ -50,11 +49,11 @@ deploy-ready: clean-deploy
 	ssh $(CCIS_MACHINE) 'mkdir -p ~/private/CS4300-deploy'
 
 deploy: pkg deploy-ready
-	scp $(PACKAGE_FILE) deploy/test.sh '$(CCIS_MACHINE):~/private/CS4300-deploy/'
+	scp $(PACKAGE_FILE) deploy-test.sh '$(CCIS_MACHINE):~/private/CS4300-deploy/'
 	ssh $(CCIS_MACHINE) 'cd ~/private/CS4300-deploy && tar -xzf $(PACKAGE_FILE)'
 
 test-deploy: deploy
-	ssh -X $(CCIS_MACHINE) '~/private/CS4300-deploy/test.sh'
+	ssh -X $(CCIS_MACHINE) '~/private/CS4300-deploy/deploy-test.sh'
 
 .PHONY: pkg build test run todo deploy doc
 

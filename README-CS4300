@@ -1,35 +1,64 @@
 # Overview
 
-The code is written in Clojure, a Lisp that targets the JVM, and uses the Java
-AWT packages for windowing and canvas graphics.
-
-
+3-mode 3D triangular facet renderer written in Clojure. The viewpoint is
+rendered with orthographic projection in the positive Z direction. The origin is
+centered, X increases rightwards, and Y increases upwards. Backface culling
+is enabled in all modes. Input takes the form of TRI files specified by path
+on the command line. In some modes, keyboard control provides rotation and
+scaling of the mesh about the origin.
 
 # Usage
 
+## Modes
 
+Mode must be specified at command line:
+
+* bary2: Triangles are rendered in color with barycentric interpolation.
+* wire: Front-facing triangles are rendered solely as their edges, in white.
+* shade: Directional lighting (from an arbitrary, hardcoded direction) is used
+         for flat shading of triangle faces. Colors are shaded linearly from
+         full color on light-source-facing triangles to black on triangles
+         facing along the source's vector. Barycentric interpolation is still
+         used for coloring.
+
+Shade and bary2 are the slowest modes, due to rendering each triangle pixel by
+pixel. Wire is much faster. All are rendered against a black background.
+
+## Interaction
+
+The left and right arrow keys change rotation around the Y (vertical) axis and
+the up and down arrow keys change rotation around the X (horizontal) axis. Each
+increments or decrements rotation by 0.1 radians. To compute the current scene,
+the accumulated X rotation is applied before the Y rotation. The [r] key resets
+both rotations to 0 radians.
+
+The object may be scaled up by a factor of 1.1 using the [+] key and down by the
+same factor using the [-] key. Scaling is reset to 1 using the [1] key.
 
 # Compilation
 
-Invoke ./setup.sh to install the Leiningen build tool in ~/.lein and download
-HW3 dependencies. Compilation is on-the-fly and will occur during the first run.
+On first run, the Leiningen build tool will be downloaded into the project
+directory and will install its dependencies into the ~/.lein directory.
+Compilation is JIT and will occur during the first run.
 
 # Execution
 
-Invoke ./run.sh to execute HW4.
+Invoke `./run.sh mode filename` to execute HW4.
 
 # Known bugs
 
-
+* Neither z-buffer nor the painter's algorithm are implemented, so non-convex
+  obects may not render properly in certain orientations.
 
 # Extra credit
 
 Possible items:
-* Light source is arbitrary, though currently hardcoded at the negated unit
-  vector of [0.3, 1.0, 0.5]. Lighting intensity goes to zero at back, not side,
+* Light direction is arbitrary, though currently hardcoded as having a source in
+  the upper right foreground. Lighting intensity goes to zero at back, not side,
   relative to source.
 
 # Third-party credit
 
-No external code was incorporated into this project.
+* No external source code was incorporated into this project.
+* Libraries used: Incanter (for matrices), Clojure, and Java standard libraries
 

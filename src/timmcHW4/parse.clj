@@ -7,7 +7,8 @@
   (binding [*read-eval* false]
     (let [nums (read-string (str "(" line ")"))]
       (when-not (and (coll? nums)
-                     (= (count nums) 18))
+                     (= (count nums) 18)
+                     (every? number? nums))
         (throw (Exception. (format "Line %d invalid." lnum))))
       (apply t/make (partition 3 nums)))))
 
