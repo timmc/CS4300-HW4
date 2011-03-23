@@ -37,6 +37,8 @@ same factor using the [-] key. Scaling is reset to 1 using the [1] key.
 
 # Compilation
 
+timmcHW4 requires a GNU/Linux machine with Java on the classpath.
+
 On first run, the Leiningen build tool will be downloaded into the project
 directory and will install its dependencies into the ~/.lein directory.
 Compilation is JIT and will occur during the first run.
