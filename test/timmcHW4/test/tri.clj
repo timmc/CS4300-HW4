@@ -1,5 +1,5 @@
-(ns timmcHW4.test.tri
-  (:use [timmcHW4.tri] :reload)
+(ns timmcHW5.test.tri
+  (:use [timmcHW5.tri] :reload)
   (:use [clojure.test]))
 
 (deftest accessors

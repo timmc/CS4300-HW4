@@ -1,15 +1,15 @@
-(ns timmcHW4.core
+(ns timmcHW5.core
   "Implements triangle mesh rendering as specified in
-   <http://www.ccs.neu.edu/course/cs4300/HW4/HW4.html>.
+   <http://www.ccs.neu.edu/course/cs4300/HW5/HW5.html>.
    See README for usage."
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
            [java.awt.event KeyEvent KeyAdapter]
            [java.awt.geom AffineTransform Line2D$Double]
            [javax.swing JFrame JComponent SwingUtilities UIManager])
-  (:require [timmcHW4.parse :as p]
-            [timmcHW4.tri :as t]
-            [timmcHW4.geom :as g])
+  (:require [timmcHW5.parse :as p]
+            [timmcHW5.tri :as t]
+            [timmcHW5.geom :as g])
   (:gen-class))
 
 ;;;; State
@@ -252,7 +252,7 @@
   (dosync (ref-set *orig-tris* tris))
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (let [canvas (new-canvas mode view-w view-h)]
-    (doto (JFrame. (str (:title mode) " / TimMc HW4 - CS4300"))
+    (doto (JFrame. (str (:title mode) " / TimMc HW5 - CS4300"))
       (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
       (.add canvas)
       (.pack)
@@ -277,7 +277,7 @@
     (when (seq more-args)
       (fail (str "Too many arguments. Unrecognized: " more-args)))
     (when-not (and which infile)
-      (fail (str "Too few arguments. Usage: timmcHW4 bary2|wire|shade file")))
+      (fail (str "Too few arguments. Usage: timmcHW5 bary2|wire|shade file")))
     (if-let [mode (modes which)]
       (SwingUtilities/invokeLater #(launch mode (read-dot-tri infile)))
       (fail (str "Unrecognized program name: " which)))))

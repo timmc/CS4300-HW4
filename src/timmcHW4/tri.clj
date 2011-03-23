@@ -1,6 +1,6 @@
-(ns timmcHW4.tri
+(ns timmcHW5.tri
   "Triangle definition and processing."
-  (:require [timmcHW4.geom :as g])
+  (:require [timmcHW5.geom :as g])
   (:use [incanter.core :only (matrix solve mmult)])
   (:import [java.awt Color]
            [java.awt.geom AffineTransform Point2D Point2D$Double]))

@@ -1,5 +1,5 @@
-(ns timmcHW4.parse
-  (:require [timmcHW4.tri :as t]))
+(ns timmcHW5.parse
+  (:require [timmcHW5.tri :as t]))
 
 (defn parse-line
   "Parse one line of a .tri file into a triangle."

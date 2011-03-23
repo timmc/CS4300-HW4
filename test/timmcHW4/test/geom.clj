@@ -1,8 +1,8 @@
-(ns timmcHW4.test.geom
-  (:use [timmcHW4.geom] :reload)
+(ns timmcHW5.test.geom
+  (:use [timmcHW5.geom] :reload)
   (:use [incanter.core :only (matrix identity-matrix)])
   (:use [clojure.test])
-  (:use [timmcHW4.test.utils :only (cut)]))
+  (:use [timmcHW5.test.utils :only (cut)]))
 
 (deftest utilities
   (is (= (wrap-pairs '[a b c d]) '[[a b] [b c] [c d] [d a]])))

@@ -1,7 +1,7 @@
-(ns timmcHW4.test.core
-  (:use [timmcHW4.core] :reload)
+(ns timmcHW5.test.core
+  (:use [timmcHW5.core] :reload)
   (:use [clojure.test])
-  (:use [timmcHW4.test.utils :only (cut)]))
+  (:use [timmcHW5.test.utils :only (cut)]))
 
 (deftest mixing
   (let [sample (mix-color [[0 1 1] [1 0 1] [1 1 0]] [0.2 0.3 0.5])]

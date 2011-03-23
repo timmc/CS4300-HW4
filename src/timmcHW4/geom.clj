@@ -1,4 +1,4 @@
-(ns timmcHW4.geom
+(ns timmcHW5.geom
   "Vector geometry. Except where otherwise marked, functions take n-vectors.
    Functions that expect a specific dimension will call project on the inputs."
   (:use [incanter.core :only (matrix mmult mult)]))
