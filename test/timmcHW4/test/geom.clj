@@ -25,19 +25,6 @@
   (is (== (dist-to-line2 [3 102] [0 100] [5 100]) 2))
   (is (== (dist-to-line2 [3 102] [5 100] [0 100]) -2)))
 
-(deftest picking
-  ;; outside
-  (is (not (in-poly2? [2 3] right-tri 0)))
-  (is (not (in-poly2? [0 0] right-tri 0)))
-  (is (not (in-poly2? [2 0] right-tri 0)))
-  ;; inside
-  (is (== (in-poly2? [1.5 1.5] right-tri 0) 0.5))
-  (is (== (in-poly2? [1.25 1.5] right-tri 0) 0.25))
-  (is (== (in-poly2? [1.5 1.25] right-tri 0) 0.25))
-  ;; allowance
-  (is (== (cut 6 (in-poly2? [0.9 0.9] right-tri 0.1)) 0))
-  (is (not (in-poly2? [0.89 0.89] right-tri 0.1))))
-
 (deftest bounding
   (is (= (bounds [[0 1] [10 11] [100 101]]) [[0 100] [1 101]]))
   (is (= (bounds [[0 20 -300]]) [[0 0] [20 20] [-300 -300]]))

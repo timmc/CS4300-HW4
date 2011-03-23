@@ -86,19 +86,6 @@
   (dot (project 2 (vect s p))
        (unit (normal2 (vect s e)))))
 
-(defn in-poly2?
-  "Return distance to closest edge if inside, or else logical false.
-   Allowance parameter specifies distance from actual edge to consider interior.
-   Only works for simple, convex polygons.
-   Vertices will be projected to the [x y] plane."
-  [pt verts allowance]
-  (let [edges (wrap-pairs (map (partial project 2) verts))
-        dists (map #(apply dist-to-line2 pt %) edges)
-        dists (map (partial + allowance) dists)]
-    (if (some neg? dists)
-      nil
-      (reduce min dists))))
-
 ;;;; 3D geometry
 
 (defn rotscale-ZXYs
