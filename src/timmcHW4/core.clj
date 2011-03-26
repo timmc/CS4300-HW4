@@ -231,7 +231,11 @@
   "Make a canvas with the given size."
   [mode w h]
   (let [canvas (proxy [JComponent] []
-                 (paint [^Graphics2D g] (render g mode))
+                 (paint [^Graphics2D g]
+                   (let [start (System/currentTimeMillis)]
+                     (render g mode)
+                     (let [end (System/currentTimeMillis)]
+                       (println "Rendered in" (- end start) "ms"))))
                  (update [^Graphics2D g]))]
     (doto canvas
       (.setDoubleBuffered true)
