@@ -115,65 +115,24 @@ its result. The result will still be passed along."
             (bit-or (bit-shift-left gi 8)
                     bi))))
 
-;; All renderers take a collection of viewpoint triangles. The triangles have
-;; been backface culled and carry an orientation vector at :orient.
-
-(defn render-bary2
-  "Render a 2D scene."
-  [^BufferedImage bi, vtris]
-  (doseq [t (tris-for-canvas vtris)]
-    (let [to-bary (t/make-to-bary2 t)
-          colors (t/colors t)]
-      (doseq [[x y] (t/candidate-points2 t)]
-        (let [[α β γ] (to-bary [x y])]
-          (when (and (< 0 α 1)
-                     (< 0 β 1)
-                     (< 0 γ 1))
-            (.setRGB bi x y (mix-color colors [α β γ]))))))))
-
-(defn render-wire
-  "Render a wireframe 3D scene."
-  [^BufferedImage bi, vtris]
-  (let [g2 (.createGraphics bi)]
-    (.setPaint g2 Color/WHITE)
-    (doseq [t (tris-for-canvas vtris)]
-      (doseq [e (t/edges t)]
-        (let [[x1 y1 x2 y2] (flatten e)]
-          (.draw g2 (Line2D$Double. x1 y1 x2 y2)))))))
-
-(defn render-shade
-  "Render a directionally shaded 3D scene."
-  [^BufferedImage bi, vtris]
-  (doseq [view-t vtris]
-    (let [;; computations on view
-          orientation-hat (g/unit (t/orientation view-t))
-          zcomp (/ (inc (g/dot orientation-hat @*light-vect*)) 2) ;; 0 to 1
-          colors (map (partial g/scale zcomp) (t/colors view-t))
-          ;;; pretty but silly orientation-dependent colors
-          ;; [xh yh zh] orientation-hat
-          ;; one-color [(- 1 xh) (- 1 yh) (- 1 zh)]
-          ;; colors [one-color one-color one-color] ; solid
-          ;; colors [[(- 1 xh) 0 0] [0 (- 1 yh) 0] [0 0 (- 1 zh)]] ; pinwheel
-          ;; computations on canvas
-          for-canvas (t/xform2 xform-view-to-canvas view-t)
-          to-bary (t/make-to-bary2 for-canvas)]
-      (when (tri-maybe-on-canvas for-canvas)
-        (doseq [[x y] (t/candidate-points2 for-canvas)]
-          (let [[α β γ] (to-bary [x y])]
-            (when (and (< 0 α 1)
-                       (< 0 β 1)
-                       (< 0 γ 1))
-              (.setRGB bi x y (mix-color colors [α β γ])))))))))
-
-;;;; Display
-
 (defn render
   "Render the scene using the given mode."
   [^Graphics2D g2, mode]
   (let [bi (BufferedImage. view-w view-h BufferedImage/TYPE_INT_RGB)
-        snapshot (ensure-view-tris)]
-    ;; TODO: Initialize with solid color
-    ((:renderer mode) bi snapshot)
+        vtris (ensure-view-tris)]
+    (doseq [view-t vtris]
+      (let [orientation-hat (g/unit (t/orientation view-t))
+            zcomp (/ (inc (g/dot orientation-hat @*light-vect*)) 2) ;; 0 to 1
+            colors (map (partial g/scale zcomp) (t/colors view-t))
+            for-canvas (t/xform2 xform-view-to-canvas view-t)
+            to-bary (t/make-to-bary2 for-canvas)]
+        (when (tri-maybe-on-canvas for-canvas)
+          (doseq [[x y] (t/candidate-points2 for-canvas)]
+            (let [[α β γ] (to-bary [x y])]
+              (when (and (< 0 α 1)
+                         (< 0 β 1)
+                         (< 0 γ 1))
+                (.setRGB bi x y (mix-color colors [α β γ]))))))))
     (.drawImage g2 bi nil 0 0)))
 
 ;;;; Interaction
@@ -211,15 +170,15 @@ its result. The result will still be passed along."
 ;;;; Modes
 
 (def modes
-  {"bary2" {:move false
-           :renderer render-bary2
-           :title "Barycentric interpolation in 2D"}
-   "wire" {:move true
-           :renderer render-wire
-           :title "Interactive wireframe"}
-   "shade" {:move true
-            :renderer render-shade
-            :title "Interactive directional flat-shaded"}})
+  {"simple" {:painter false
+             :zbuffer false
+             :title "No special handling for concave."}
+   "painter" {:painter true
+              :zbuffer false
+              :title "Painter's Algorithm"}
+   "zbuffer" {:painter false
+              :zbuffer true
+              :title "zbuffer algorithm"}})
 
 ;;;; Launch
 
@@ -250,13 +209,11 @@ its result. The result will still be passed along."
       (.setPreferredSize (Dimension. w h))
       (.addKeyListener (proxy [KeyAdapter] []
                          (keyPressed [^KeyEvent ke]
-                           (when (:move mode)
-                             (when (handle-key-pressed ke)
-                               (invalidate-view canvas))))
+                           (when (handle-key-pressed ke)
+                             (invalidate-view canvas)))
                          (keyTyped [^KeyEvent ke]
-                           (when (:move mode)
-                             (when (handle-key-typed ke)
-                               (invalidate-view canvas)))))))))
+                           (when (handle-key-typed ke)
+                             (invalidate-view canvas))))))))
 
 (defn launch
   [mode tris]
@@ -289,7 +246,8 @@ its result. The result will still be passed along."
     (when (seq more-args)
       (fail (str "Too many arguments. Unrecognized: " more-args)))
     (when-not (and which infile)
-      (fail (str "Too few arguments. Usage: timmcHW4 bary2|wire|shade file")))
+      (fail (str "Too few arguments. "
+                 "Usage: timmcHW4 simple|painter|zbuffer file")))
     (if-let [mode (modes which)]
       (SwingUtilities/invokeLater #(launch mode (read-dot-tri infile)))
       (fail (str "Unrecognized program name: " which)))))
