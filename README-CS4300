@@ -61,6 +61,6 @@ Possible items:
 
 # Third-party credit
 
-* No external source code was incorporated into this project.
+* Use amalloy's ? debugging macro: https://gist.github.com/c93c37345c49c47dcfa2
 * Libraries used: Incanter (for matrices), Clojure, and Java standard libraries
 

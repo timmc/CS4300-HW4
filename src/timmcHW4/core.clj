@@ -4,6 +4,7 @@
    See README for usage."
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
+           [java.awt.image BufferedImage]
            [java.awt.event KeyEvent KeyAdapter]
            [java.awt.geom AffineTransform Line2D$Double]
            [javax.swing JFrame JComponent SwingUtilities UIManager])
@@ -11,6 +12,16 @@
             [timmcHW4.tri :as t]
             [timmcHW4.geom :as g])
   (:gen-class))
+
+;; Thanks, amalloy! https://gist.github.com/c93c37345c49c47dcfa2
+(defmacro ?
+  "A useful debugging tool when you can't figure out what's going on:
+wrap a form with ?, and the form will be printed alongside
+its result. The result will still be passed along."
+  [val]
+  `(let [x# ~val]
+     (prn '~val '~'is x#)
+     x#))
 
 ;;;; State
 
@@ -86,29 +97,30 @@
 
 ;;;; Renderers
 
-(defn ^Float clamp-float
-  "Clamp a float value to within the specified closed interval."
-  [min max v]
-  (Math/min (float max) (Math/max (float min) (float v))))
+(defn clamp
+  "Clamp a number to within the specified closed interval."
+  [minv maxv v]
+  (min maxv (max minv v)))
 
-(defn ^Color mix-color
-  "Create a Color object from a barycentric coordinates of a point and the
+(defn mix-color
+  "Create an RGB int from a barycentric coordinates of a point and the
    float [r g b] colors at the vertices."
   [colors bary-coords]
   ;; Clamping is for possible floating point errors driving floats out of [0 1].
   ;; This is also the only check on input colors.
   ;; TODO: Investigate performance benefits of removing clamps.
-  (apply #(Color. (clamp-float 0 1 %1)
-                  (clamp-float 0 1 %2)
-                  (clamp-float 0 1 %3))
-         (g/sum (map g/scale bary-coords colors))))
+  (let [rgb-floats (g/sum (map g/scale bary-coords colors))
+        [ri gi bi] (map #(clamp 0 255 (int (* 255 %))) rgb-floats)]
+    (bit-or (bit-shift-left ri 16)
+            (bit-or (bit-shift-left gi 8)
+                    bi))))
 
 ;; All renderers take a collection of viewpoint triangles. The triangles have
 ;; been backface culled and carry an orientation vector at :orient.
 
 (defn render-bary2
   "Render a 2D scene."
-  [^Graphics2D g2, vtris]
+  [^BufferedImage bi, vtris]
   (doseq [t (tris-for-canvas vtris)]
     (let [to-bary (t/make-to-bary2 t)
           colors (t/colors t)]
@@ -117,23 +129,21 @@
           (when (and (< 0 α 1)
                      (< 0 β 1)
                      (< 0 γ 1))
-            (doto g2
-              (.setPaint (mix-color colors [α β γ]))
-              ;; TODO: Check this on CCIS machine -- may not draw properly
-              (.drawLine x y x y))))))))
+            (.setRGB bi x y (mix-color colors [α β γ]))))))))
 
 (defn render-wire
   "Render a wireframe 3D scene."
-  [^Graphics2D g2, vtris]
-  (.setPaint g2 Color/WHITE)
-  (doseq [t (tris-for-canvas vtris)]
-    (doseq [e (t/edges t)]
-      (let [[x1 y1 x2 y2] (flatten e)]
-        (.draw g2 (Line2D$Double. x1 y1 x2 y2))))))
+  [^BufferedImage bi, vtris]
+  (let [g2 (.createGraphics bi)]
+    (.setPaint g2 Color/WHITE)
+    (doseq [t (tris-for-canvas vtris)]
+      (doseq [e (t/edges t)]
+        (let [[x1 y1 x2 y2] (flatten e)]
+          (.draw g2 (Line2D$Double. x1 y1 x2 y2)))))))
 
 (defn render-shade
   "Render a directionally shaded 3D scene."
-  [^Graphics2D g2, vtris]
+  [^BufferedImage bi, vtris]
   (doseq [view-t vtris]
     (let [;; computations on view
           orientation-hat (g/unit (t/orientation view-t))
@@ -153,20 +163,18 @@
             (when (and (< 0 α 1)
                        (< 0 β 1)
                        (< 0 γ 1))
-              (.setPaint g2 (mix-color colors [α β γ]))
-              (.drawLine g2 x y x y))))))))
+              (.setRGB bi x y (mix-color colors [α β γ])))))))))
 
 ;;;; Display
 
 (defn render
   "Render the scene using the given mode."
   [^Graphics2D g2, mode]
-  ;; TODO: Try using a BufferedImage for performance
-  (doto g2
-    (.setPaint Color/BLACK)
-    (.fillRect 0 0 (dec view-w) (dec view-h)))
-  (let [snapshot (ensure-view-tris)]
-    ((:renderer mode) g2 snapshot)))
+  (let [bi (BufferedImage. view-w view-h BufferedImage/TYPE_INT_RGB)
+        snapshot (ensure-view-tris)]
+    ;; TODO: Initialize with solid color
+    ((:renderer mode) bi snapshot)
+    (.drawImage g2 bi nil 0 0)))
 
 ;;;; Interaction
 
