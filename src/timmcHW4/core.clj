@@ -243,7 +243,7 @@ its result. The result will still be passed along."
   (dosync (ref-set *orig-tris* tris))
   (UIManager/setLookAndFeel (UIManager/getSystemLookAndFeelClassName))
   (let [canvas (new-canvas mode view-w view-h)]
-    (doto (JFrame. (str (:title mode) " / TimMc HW4 - CS4300"))
+    (doto (JFrame. (str (:title mode) " / TimMc HW5 - CS4300"))
       (.setDefaultCloseOperation JFrame/DISPOSE_ON_CLOSE)
       (.add canvas)
       (.pack)

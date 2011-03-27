@@ -1,5 +1,5 @@
 #!/bin/bash
-# Runs timmcHW4 program. See README for documentation.
+# Runs timmcHW5 program. See README for documentation.
 # First run installs build manager into ~/.lein
 
 set -o errexit
@@ -21,5 +21,5 @@ if [ ! -f "$LEIN_LOCAL" ] ; then
   first-run
 fi
 
-java -jar timmcHW4-standalone.jar "$@"
+java -jar timmcHW5-standalone.jar "$@"
 
