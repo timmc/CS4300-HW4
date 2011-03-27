@@ -67,11 +67,13 @@ its result. The result will still be passed along."
 (defn tris-for-viewpoint
   "Map world triangles to viewpoint, adding orientation vectors and culling
    backface elements."
-  [tris]
+  [tris painter]
   ;; TODO: investigate why this negation is required for CCW z rotation
-  (let [tmat (g/rotscale-ZXYs (- @*rot-Z*) @*rot-X* @*rot-Y* @*scale*)]
-    (filter t/front-face3z?
-            (map #(t/orient (t/xform3 % tmat)) tris))))
+  (let [tmat (g/rotscale-ZXYs (- @*rot-Z*) @*rot-X* @*rot-Y* @*scale*)
+        front (filter t/front-face3z? (map #(t/orient (t/xform3 % tmat)) tris))]
+    (if painter
+      (t/zorder front)
+      front)))
 
 (defn tris-for-canvas
   "Map viewpoint triangles to canvas, culling offscreen elements."
@@ -84,7 +86,7 @@ its result. The result will still be passed along."
 
 (defn ensure-view-tris
   "Get viewpoint triangles, recalculating if necessary."
-  []
+  [painter]
   (dosync
    (ensure *rot-Z*)
    (ensure *rot-X*)
@@ -93,7 +95,7 @@ its result. The result will still be passed along."
    (if-let [view @*view-tris*]
      view
      (ref-set *view-tris*
-              (tris-for-viewpoint @*orig-tris*)))))
+              (tris-for-viewpoint @*orig-tris* painter)))))
 
 ;;;; Renderers
 
@@ -119,7 +121,7 @@ its result. The result will still be passed along."
   "Render the scene using the given mode."
   [^Graphics2D g2, mode]
   (let [bi (BufferedImage. view-w view-h BufferedImage/TYPE_INT_RGB)
-        vtris (ensure-view-tris)]
+        vtris (ensure-view-tris (:painter mode))]
     (doseq [view-t vtris]
       (let [orientation-hat (g/unit (t/orientation view-t))
             zcomp (/ (inc (g/dot orientation-hat @*light-vect*)) 2) ;; 0 to 1

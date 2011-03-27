@@ -110,3 +110,14 @@
             γ (- 1 α β)]
         ;; having fun with Unicode char names -- nix this down the road, maybe
         [α β γ]))))
+
+(defn annotate-zmax
+  "Annotate a triangle with its max z value."
+  [tri]
+  (let [zmax (apply max (map #(nth % 2) (vertices tri)))]
+    (assoc tri :zmax zmax)))
+
+(defn zorder
+  "Sort triangles in increasing z order."
+  [tris]
+  (sort-by :zmax (map annotate-zmax tris)))
