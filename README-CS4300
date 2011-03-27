@@ -1,7 +1,7 @@
 # Overview
 
 3-mode 3D triangular facet renderer written in Clojure, built on the directional
-flat shader with barycentric interpolation from in HW5. (Code still uses the
+flat shader with barycentric interpolation from HW5. (Code still uses the
 timmcHW4 namespace.) Input takes the form of TRI files specified by path on the
 command line. Keyboard control provides rotation and scaling of the mesh about
 the origin.
