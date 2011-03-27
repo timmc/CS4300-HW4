@@ -21,7 +21,7 @@ todo:
 
 clean: pkg-clean
 
-PROJNAME := mccormack_t_HW4
+PROJNAME := mccormack_t_HW5
 PACKAGE_FILE := "$(PROJNAME).tar.gz"
 PKGDIR := "pkg/$(PROJNAME)"
 

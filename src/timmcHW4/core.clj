@@ -1,6 +1,6 @@
 (ns timmcHW4.core
   "Implements triangle mesh rendering as specified in
-   <http://www.ccs.neu.edu/course/cs4300/HW4/HW4.html>.
+   <http://www.ccs.neu.edu/course/cs4300/HW5/HW5.html>.
    See README for usage."
   (:import [java.io BufferedReader FileReader]
            [java.awt Color Graphics2D Dimension]
@@ -247,7 +247,7 @@ its result. The result will still be passed along."
       (fail (str "Too many arguments. Unrecognized: " more-args)))
     (when-not (and which infile)
       (fail (str "Too few arguments. "
-                 "Usage: timmcHW4 simple|painter|zbuffer file")))
+                 "Usage: timmcHW5 simple|painter|zbuffer file")))
     (if-let [mode (modes which)]
       (SwingUtilities/invokeLater #(launch mode (read-dot-tri infile)))
       (fail (str "Unrecognized program name: " which)))))
