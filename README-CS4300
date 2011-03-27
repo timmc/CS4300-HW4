@@ -1,11 +1,10 @@
 # Overview
 
-3-mode 3D triangular facet renderer written in Clojure. The viewpoint is
-rendered with orthographic projection in the positive Z direction. The origin is
-centered, X increases rightwards, and Y increases upwards. Backface culling
-is enabled in all modes. Input takes the form of TRI files specified by path
-on the command line. In some modes, keyboard control provides rotation and
-scaling of the mesh about the origin.
+3-mode 3D triangular facet renderer written in Clojure, built on the directional
+flat shader with barycentric interpolation from in HW5. (Code still uses the
+timmcHW4 namespace.) Input takes the form of TRI files specified by path on the
+command line. Keyboard control provides rotation and scaling of the mesh about
+the origin.
 
 # Usage
 
@@ -13,16 +12,13 @@ scaling of the mesh about the origin.
 
 Mode must be specified at command line:
 
-* bary2: Triangles are rendered in color with barycentric interpolation.
-* wire: Front-facing triangles are rendered solely as their edges, in white.
-* shade: Directional lighting (from an arbitrary, hardcoded direction) is used
-         for flat shading of triangle faces. Colors are shaded linearly from
-         full color on light-source-facing triangles to black on triangles
-         facing along the source's vector. Barycentric interpolation is still
-         used for coloring.
+* simple: Triangles are simply rendered in the order they are provided.
+* painter: Triangles are drawn back to front according to current viewpoint.
+           Specifically, they are ordered by increasing max z value.
+* zbuffer: Pixels are only overwritten when the point in question is nearer than
+           points previously drawn for that pixel.
 
-Shade and bary2 are the slowest modes, due to rendering each triangle pixel by
-pixel. Wire is much faster. All are rendered against a black background.
+Again, all are rendered against a black background.
 
 ## Interaction
 
@@ -37,7 +33,7 @@ same factor using the [-] key. Scaling is reset to 1 using the [1] key.
 
 # Compilation
 
-timmcHW4 requires a GNU/Linux machine with Java on the classpath.
+timmcHW5 requires a GNU/Linux machine with Java on the classpath.
 
 On first run, the Leiningen build tool will be downloaded into the project
 directory and will install its dependencies into the ~/.lein directory.
@@ -45,22 +41,18 @@ Compilation is JIT and will occur during the first run.
 
 # Execution
 
-Invoke `./run.sh mode filename` to execute HW4.
+Invoke `./run.sh mode filename` to execute HW5.
 
 # Known bugs
 
-* Neither z-buffer nor the painter's algorithm are implemented, so non-convex
-  obects may not render properly in certain orientations.
+None.
 
 # Extra credit
 
-Possible items:
-* Light direction is arbitrary, though currently hardcoded as having a source in
-  the upper right foreground. Lighting intensity goes to zero at back, not side,
-  relative to source.
+None.
 
 # Third-party credit
 
-* Use amalloy's ? debugging macro: https://gist.github.com/c93c37345c49c47dcfa2
+* amalloy's "?" debugging macro: https://gist.github.com/c93c37345c49c47dcfa2
 * Libraries used: Incanter (for matrices), Clojure, and Java standard libraries
 
