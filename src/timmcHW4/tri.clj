@@ -121,3 +121,11 @@
   "Sort triangles in increasing z order."
   [tris]
   (sort-by :zmax (map annotate-zmax tris)))
+
+(defn bary-z
+  "Compute the current z coordinate given a triangle and the barycentric
+   coordinates of the current point."
+  [tri α β γ]
+  (let [[[_ _ z0] [_ _ z1] [_ _ z2]] (vertices tri)] 
+    (+ (* z0 α) (* z1 β) (* z2 γ))))
+

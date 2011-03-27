@@ -117,11 +117,27 @@ its result. The result will still be passed along."
             (bit-or (bit-shift-left gi 8)
                     bi))))
 
+(defn make-zbuffer
+  "Initialize a zbuffer of the given width and height, starting at origin."
+  [w h]
+  (double-array (* w h) Double/NEGATIVE_INFINITY))
+
+(defn update-zbuffer!
+  "Update a point in the zbuffer with the new z value, if more positive.
+   Return logical true if updated."
+  [zbuf, x, y, z]
+  ;; FIXME direct dependency on view-w
+  (let [i (+ (* y view-w) x)
+        oldz (aget zbuf i)]
+    (when (< oldz z)
+      (aset zbuf i z))))
+
 (defn render
   "Render the scene using the given mode."
   [^Graphics2D g2, mode]
   (let [bi (BufferedImage. view-w view-h BufferedImage/TYPE_INT_RGB)
-        vtris (ensure-view-tris (:painter mode))]
+        vtris (ensure-view-tris (:painter mode))
+        zbuf (if (:zbuffer mode) (make-zbuffer view-w view-h) nil)]
     (doseq [view-t vtris]
       (let [orientation-hat (g/unit (t/orientation view-t))
             zcomp (/ (inc (g/dot orientation-hat @*light-vect*)) 2) ;; 0 to 1
@@ -136,7 +152,9 @@ its result. The result will still be passed along."
               (when (and (< 0 α 1)
                          (< 0 β 1)
                          (< 0 γ 1))
-                (.setRGB bi x y (mix-color colors [α β γ]))))))))
+                (let [z (if zbuf (t/bary-z view-t α β γ) nil)]
+                  (if (or (not zbuf) (update-zbuffer! zbuf x y z))
+                    (.setRGB bi x y (mix-color colors [α β γ]))))))))))
     (.drawImage g2 bi nil 0 0)))
 
 ;;;; Interaction
