@@ -40,20 +40,22 @@ pkg-clean:
 	lein clean
 
 CCIS_MACHINE := timepilot.ccs.neu.edu
+PRIVATE_DIR := ~/private
+DEPLOY_DIR := $(PRIVATE_DIR)/CS4300-deploy
 
 clean-deploy:
-	ssh $(CCIS_MACHINE) 'rm -rf ~/private/CS4300-deploy'
+	ssh $(CCIS_MACHINE) 'rm -rf $(DEPLOY_DIR)'
 
 deploy-ready: clean-deploy
-	ssh $(CCIS_MACHINE) 'ls -ld ~/private/ | grep drwx------ &>/dev/null'
-	ssh $(CCIS_MACHINE) 'mkdir -p ~/private/CS4300-deploy'
+	ssh $(CCIS_MACHINE) 'ls -ld $(PRIVATE_DIR)/ | grep drwx------ &>/dev/null'
+	ssh $(CCIS_MACHINE) 'mkdir -p $(DEPLOY_DIR)'
 
 deploy: pkg deploy-ready
-	scp $(PACKAGE_FILE) deploy-test.sh '$(CCIS_MACHINE):~/private/CS4300-deploy/'
-	ssh $(CCIS_MACHINE) 'cd ~/private/CS4300-deploy && tar -xzf $(PACKAGE_FILE)'
+	scp $(PACKAGE_FILE) deploy-test.sh '$(CCIS_MACHINE):$(DEPLOY_DIR)/'
+	ssh $(CCIS_MACHINE) 'cd $(DEPLOY_DIR) && tar -xzf $(PACKAGE_FILE)'
 
 test-deploy: deploy
-	ssh -X $(CCIS_MACHINE) '~/private/CS4300-deploy/deploy-test.sh'
+	ssh -X $(CCIS_MACHINE) '$(DEPLOY_DIR)/deploy-test.sh'
 
 .PHONY: pkg build test run todo deploy doc
 
