@@ -87,12 +87,12 @@
 (defn candidate-points2
   "Returns a lazy seq of points that are possibly on the triangle's
    2D projection. Currently returns all points in a triangle's axis-aligned
-   bounding box."
-  [tri]
+   bounding box and also within the view's bounding edges."
+  [tri vxmin vxmax vymin vymax]
   (let [[[xmin xmax] [ymin ymax]] (g/bounds (vertices tri))
         vs (vertices tri)]
-    (for [x (range (int xmin) (inc (int xmax)))
-          y (range (int ymin) (inc (int ymax)))]
+    (for [x (range (int (max xmin vxmin)) (inc (int (min xmax vxmax))))
+          y (range (int (max ymin vymin)) (inc (int (min ymax vymax))))]
       [x y])))
 
 (defn make-to-bary2

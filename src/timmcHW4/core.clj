@@ -127,7 +127,9 @@ its result. The result will still be passed along."
             for-canvas (t/xform2 xform-view-to-canvas view-t)
             to-bary (t/make-to-bary2 for-canvas)]
         (when (tri-maybe-on-canvas for-canvas)
-          (doseq [[x y] (t/candidate-points2 for-canvas)]
+          (doseq [[x y] (t/candidate-points2 for-canvas
+                                             0 (dec view-w)
+                                             0 (dec view-h))]
             (let [[α β γ] (to-bary [x y])]
               (when (and (< 0 α 1)
                          (< 0 β 1)

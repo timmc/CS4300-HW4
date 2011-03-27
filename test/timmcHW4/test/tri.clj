@@ -9,11 +9,15 @@
     (is (= (edges basic-tri) [[[0 1] [2 3]] [[2 3] [4 5]] [[4 5] [0 1]]]))))
 
 (deftest bounding
-  (is (= (candidate-points2 (make [0.1 0.1] [2.5 0.1] [0.1 2.5]
-                                  [0 0 0] [0 0 0] [0 0 0]))
-         [[0 0] [0 1] [0 2]
-          [1 0] [1 1] [1 2]
-          [2 0] [2 1] [2 2]])))
+  (let [small (make [0.1 0.1] [2.5 0.1] [0.1 2.5]
+                    [0 0 0] [0 0 0] [0 0 0])]
+    (is (= (candidate-points2 small 0 10 0 10)
+           [[0 0] [0 1] [0 2]
+            [1 0] [1 1] [1 2]
+            [2 0] [2 1] [2 2]]))
+    (is (= (candidate-points2 small -3 1 -2 1)
+           [[0 0] [0 1]
+            [1 0] [1 1]]))))
 
 (deftest orienting
   (let [unit-ccw (orient (make [0 0 0] [1 0 0] [0 1 0] [] [] []))]
